@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Math::Complex;
+use overload 'eq' => \&eq;
 
 # Constructor
 
@@ -90,12 +91,6 @@ sub limit {
 
 sub eq {
 	my ($self, $other) = @_;
-	if (!$other) {
-		return 0;
-	}
-	if ($self eq $other) {
-		return 1;
-	}
 	return $self->{x} == $other->{x} && $self->{y} == $other->{y};
 }
 
@@ -141,6 +136,11 @@ sub sNormalize {
 	my ($class, $a) = @_;
 	my $c = $class->sClone($a);
 	return $c->normalize();
+}
+
+sub sZero {
+	my ($class) = @_;
+	return $class->new(0, 0);
 }
 
 1;

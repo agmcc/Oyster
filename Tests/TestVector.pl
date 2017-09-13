@@ -5,7 +5,7 @@ package Oyster::Tests::TestVector;
 use strict;
 use warnings;
 
-use Test::Simple tests => 23;
+use Test::Simple tests => 24;
 use lib '..';
 use Vector;
 
@@ -32,6 +32,7 @@ sub main{
     sClone();
     sDist();
     sNormalize();
+    sZero();
 }
 
 sub new {
@@ -46,7 +47,7 @@ sub equals {
 	ok ($a->eq($b), "eq");
 	ok (!$a->eq($c), "eq negative");
 	ok ($a->eq($a), "eq same");
-	ok (!$a->eq(), "eq undefined");
+	ok ($a eq $b, "overload eq");
 }
 
 sub add {
@@ -202,6 +203,12 @@ sub sNormalize {
 	my $m = $n->mag();
 	my $rm = 1;
 	ok ($m == $rm && $a->eq($ra), "sNormalize");
+}
+
+sub sZero {
+	my $a = Oyster::Vector->sZero();
+	my $ra = Oyster::Vector->new(0, 0);
+	ok ($a->eq($ra), "sZero");
 }
 
 main();
