@@ -80,12 +80,6 @@ sub normalize {
 	return $self;
 }
 
-sub dist {
-	my ($self, $other) = @_;
-	my $diff = Vector->sub($other, $self);
-	return $diff->mag();
-}
-
 sub limit {
 	my ($self, $max) = @_;
 	if ($self->mag() > $max) {
