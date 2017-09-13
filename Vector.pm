@@ -104,4 +104,43 @@ sub print {
 	print "[$self->{x}, $self->{y}]\n";
 }
 
+# Static methods
+
+sub sAdd {
+	my ($class, $a, $b) = @_;
+	return $class->new($a->{x} + $b->{x}, $a->{y} + $b->{y});
+}
+
+sub sSub {
+	my ($class, $a, $b) = @_;
+	return $class->new($a->{x} - $b->{x}, $a->{y} - $b->{y});
+}
+
+sub sMult {
+	my ($class, $a, $b) = @_;
+	return $class->new($a->{x} * $b, $a->{y} * $b);
+}
+
+sub sDiv {
+	my ($class, $a, $b) = @_;
+	return $class->new($a->{x} / $b, $a->{y} / $b);
+}
+
+sub sClone {
+	my ($class, $a) = @_;
+	return $class->new($a->{x}, $a->{y});
+}
+
+sub sDist {
+	my ($class, $a, $b) = @_;
+	my $diff = $class->sSub($a, $b);
+	return $diff->mag();
+}
+
+sub sNormalize {
+	my ($class, $a) = @_;
+	my $c = $class->sClone($a);
+	return $c->normalize();
+}
+
 1;

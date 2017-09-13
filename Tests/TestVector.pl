@@ -5,7 +5,7 @@ package Oyster::Tests::TestVector;
 use strict;
 use warnings;
 
-use Test::Simple tests => 16;
+use Test::Simple tests => 23;
 use lib '..';
 use Vector;
 
@@ -24,6 +24,14 @@ sub main{
     dot();
     normalize();
     limit();
+
+    sAdd();
+    sSub();
+    sMult();
+    sDiv();
+    sClone();
+    sDist();
+    sNormalize();
 }
 
 sub new {
@@ -129,6 +137,71 @@ sub limit {
 	my $m2 = $b->mag();
 	my $rm2 = 5;
 	ok ($m2 == $rm2, "limit not reached");
+}
+
+sub sAdd {
+	my $a = Oyster::Vector->new(2, 4);
+	my $b = Oyster::Vector->new(5, 8);
+	my $c = Oyster::Vector->sAdd($a, $b);	
+	my $ra = Oyster::Vector->new(2, 4);
+	my $rb = Oyster::Vector->new(5, 8);
+	my $rc = Oyster::Vector->new(7, 12);
+	ok ($c->eq($rc) && $a->eq($ra) && $b->eq($rb), "sAdd");
+}
+
+sub sSub {
+	my $a = Oyster::Vector->new(2, 4);
+	my $b = Oyster::Vector->new(5, 8);
+	my $c = Oyster::Vector->sSub($a, $b);	
+	my $ra = Oyster::Vector->new(2, 4);
+	my $rb = Oyster::Vector->new(5, 8);
+	my $rc = Oyster::Vector->new(-3, -4);
+	ok ($c->eq($rc) && $a->eq($ra) && $b->eq($rb), "sSub");
+}
+
+sub sMult {
+	my $a = Oyster::Vector->new(2, 4);
+	my $b = 5;
+	my $c = Oyster::Vector->sMult($a, $b);
+	my $ra = Oyster::Vector->new(2, 4);
+	my $rb = 5;
+	my $rc = Oyster::Vector->new(10, 20);
+	ok ($c->eq($rc) && $a->eq($ra) && $b == $rb, "sMult");
+}
+
+sub sDiv {
+	my $a = Oyster::Vector->new(2, 4);
+	my $b = 2;
+	my $c = Oyster::Vector->sDiv($a, $b);
+	my $ra = Oyster::Vector->new(2, 4);
+	my $rb = 2;
+	my $rc = Oyster::Vector->new(1, 2);
+	ok ($c->eq($rc) && $a->eq($ra) && $b == $rb, "sDiv");
+}
+
+sub sClone {
+	my $a = Oyster::Vector->new(2, 4);
+	my $b = Oyster::Vector->sClone($a);
+	ok ($a->eq($b), "sClone");
+}
+
+sub sDist {
+	my $a = Oyster::Vector->new(1, 3);
+	my $b = Oyster::Vector->new(3, 6);
+	my $d = Oyster::Vector->sDist($a, $b);
+	my $ra = Oyster::Vector->new(1, 3);
+	my $rb = Oyster::Vector->new(3, 6);
+	my $rd = 3.605551275463989;
+	ok ($d == $rd && $a->eq($ra) && $b->eq($rb), "sDist");
+}
+
+sub sNormalize {
+	my $a = Oyster::Vector->new(4, 6);
+	my $n = Oyster::Vector->sNormalize($a);
+	my $ra = Oyster::Vector->new(4, 6);
+	my $m = $n->mag();
+	my $rm = 1;
+	ok ($m == $rm && $a->eq($ra), "sNormalize");
 }
 
 main();
