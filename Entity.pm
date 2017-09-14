@@ -11,9 +11,9 @@ use overload 'eq' => \&eq;
 # Constructor
 
 sub new {
-	my ($class) = @_;
+	my ($class, $name) = @_;
 	my $self = {
-		id => 123,
+		name => $name,
 		location => Oyster::Vector->sZero(),
 		velocity => Oyster::Vector->sZero()
 	};
@@ -30,7 +30,16 @@ sub update {
 
 sub eq {
 	my ($self, $other) = @_;
-	return ($self->{id} == $other->{id});
+	return ($self->{name} == $other->{name});
+}
+
+sub print {
+	my ($self) = @_;
+	print ("$self->{name}\n");
+	print "location: ";
+	$self->{location}->print();
+	print "velocity: ";
+	$self->{velocity}->print();
 }
 
 1;
