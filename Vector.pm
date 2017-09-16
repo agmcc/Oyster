@@ -6,7 +6,11 @@ use strict;
 use warnings;
 
 use Math::Complex;
-use overload 'eq' => \&eq;
+
+use overload {
+	eq => \&eq,
+	ne => \&ne
+};
 
 # Constructor
 
@@ -92,6 +96,11 @@ sub limit {
 sub eq {
 	my ($self, $other) = @_;
 	return $self->{x} == $other->{x} && $self->{y} == $other->{y};
+}
+
+sub ne {
+	my ($self, $other) = @_;
+	return !($self eq $other);
 }
 
 sub print {

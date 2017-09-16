@@ -15,7 +15,8 @@ sub new {
 	my $self = {
 		name => $name,
 		location => Oyster::Vector->sZero(),
-		velocity => Oyster::Vector->sZero()
+		velocity => Oyster::Vector->sZero(),
+		locationPrevious => Oyster::Vector->sZero()
 	};
 	bless ($self, $class);
 	return $self;
@@ -25,6 +26,7 @@ sub new {
 
 sub update {
 	my ($self) = @_;
+	$self->{locationPrevious} = Oyster::Vector->sClone($self->{location});
 	$self->{location}->add($self->{velocity});
 }
 
@@ -38,6 +40,8 @@ sub print {
 	print ("$self->{name}\n");
 	print "location: ";
 	$self->{location}->print();
+	print "locationPrevious: ";
+	$self->{locationPrevious}->print();
 	print "velocity: ";
 	$self->{velocity}->print();
 }

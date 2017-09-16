@@ -30,7 +30,7 @@ sub new {
 
 sub tick {
 	my ($self) = @_;
-	print "Tick\n";
+	# print "Tick\n";
 	for my $e (@{$self->{entities}}) {
 		$e->update();
 		$self->checkBounds($e);
