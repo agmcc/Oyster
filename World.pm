@@ -34,6 +34,19 @@ sub tick {
 	for my $e (@{$self->{entities}}) {
 		$e->update();
 		$self->checkBounds($e);
+		$self->collisionDetection($e, @{$self->{entities}});
+	}
+}
+
+sub collisionDetection {
+	my ($self, $entity, @entities) = @_;
+	for my $other (@entities) {
+		# Hack - fix Entity::ne
+		if ($other->{name} ne $entity->{name}) {
+			if ($entity->intersects($other)) {
+				$entity->onCollision($other);
+			}
+		}
 	}
 }
 

@@ -25,7 +25,7 @@ sub drawWorld {
 	my ($self, $world) = @_;
 
 	for my $e (@{$world->{entities}}) {
-		$self->drawEntity($e, '#');
+		$self->drawEntity($e);
 	}
 }
 
@@ -68,13 +68,13 @@ sub setBorder {
 }
 
 sub drawEntity {
-	my ($self, $e, $sprite) = @_;
+	my ($self, $e) = @_;
 	my $prev = $self->worldToView($e->{locationPrevious});
 	my $cur = $self->worldToView($e->{location});
 
 	if ($prev ne $cur) {
 		$self->drawPixel($prev, ' ');
-		$self->drawPixel($cur, $sprite);
+		$self->drawPixel($cur, $e->{sprite});
 	}
 }
 

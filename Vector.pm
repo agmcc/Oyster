@@ -7,10 +7,13 @@ use warnings;
 
 use Math::Complex;
 
-use overload {
-	eq => \&eq,
-	ne => \&ne
-};
+# use overload {
+# 	eq => \&eq,
+# 	ne => \&ne
+# };
+
+use overload eq => \&eq;
+use overload ne => \&ne;
 
 # Constructor
 
