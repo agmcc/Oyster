@@ -73,8 +73,31 @@ sub drawEntity {
 	my $cur = $self->worldToView($e->{location});
 
 	if ($prev ne $cur) {
-		$self->drawPixel($prev, ' ');
-		$self->drawPixel($cur, $e->{sprite});
+		# Clear
+		my $prevRect = Oyster::Bounds->new($prev->{x} + $e->{bounds}->{x1},
+										   $prev->{y} + $e->{bounds}->{y1},
+										   $prev->{x} + $e->{bounds}->{x2},
+										   $prev->{y} + $e->{bounds}->{y2});
+		$self->drawRect($prevRect, ' ', 1);
+		# Draw
+		my $curRect = Oyster::Bounds->new($cur->{x} + $e->{bounds}->{x1},
+										  $cur->{y} + $e->{bounds}->{y1},
+										  $cur->{x} + $e->{bounds}->{x2},
+										  $cur->{y} + $e->{bounds}->{y2});
+		$self->drawRect($curRect, $e->{sprite}, 1);
+	}
+}
+
+sub drawRect {
+	my ($self, $rect, $pixel, $fill) = @_;
+	for (my $x = $rect->{x1}; $x <= $rect->{x2}; $x++) {
+		for (my $y = $rect->{y1}; $y <= $rect->{y2}; $y++) {
+			if ($fill || (!$fill &&
+				$x == $rect->{x1} || $x == $rect->{x2} || 
+				$y == $rect->{y1} || $y == $rect->{y2})) {
+				$self->drawPixel(Oyster::Vector->new($x, $y), $pixel);
+			}
+		}
 	}
 }
 
