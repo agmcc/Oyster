@@ -13,13 +13,19 @@ use View;
 use Border;
 use Time::HiRes qw'sleep';
 use Bounds;
+use Data::Dumper;
 
 $|=1;
 
 my $worldThread;
 
 sub main{
-	my $world = Oyster::World->new(100, 40, Oyster::World::WRAP);
+	# print "\n\n";
+	# Oyster::View->drawSprite();
+	# print "\n\n";
+	# exit();
+
+	my $world = Oyster::World->new(50, 40, Oyster::World::WRAP);
 	
 	my $mike = Oyster::Entity->new("Mike");
 	$mike->{velocity} = Oyster::Vector->new(.1, .1);
@@ -40,14 +46,23 @@ sub main{
 	$t->setSprite('T');
 
 	my $u = Oyster::Entity->new("U");
-	$u->{location} = Oyster::Vector->new(20, 5);
-	$u->{velocity} = Oyster::Vector->new(-.1, 0);
-	$u->setSprite('U');
+	$u->{location} = Oyster::Vector->new(20, 20);
+	$u->{velocity} = Oyster::Vector->new(-0.1, 0);
 
-	$world->addEntity($mike);
-	$world->addEntity($alex);
-	$world->addEntity($dave);
-	$world->addEntity($t);
+	my @robot = 
+	(
+		["[\e[1;31m:\e[0m]"],
+		['/#\\'],
+		['| |']
+	);
+
+	$u->setSprite(@robot);
+	$u->{bounds}->setBounds(-1, -1, 1, 1);
+
+	# $world->addEntity($mike);
+	# $world->addEntity($alex);
+	# $world->addEntity($dave);
+	# $world->addEntity($t);
 	$world->addEntity($u);
 
 	my $view = Oyster::View->new();
@@ -65,7 +80,7 @@ sub main{
 	while (1) {
 		$world->tick();
 		$view->drawWorld($world);
-		sleep(1/60);
+		sleep(1/30);
 	}
 
 	print "\n\n";

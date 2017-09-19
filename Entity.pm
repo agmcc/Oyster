@@ -21,7 +21,6 @@ sub new {
 		location => Oyster::Vector->sZero(),
 		velocity => Oyster::Vector->sZero(),
 		locationPrevious => Oyster::Vector->sZero(),
-		sprite => '?',
 		bounds => Oyster::Bounds->new(0, 0, 1, 1)
 	};
 	bless ($self, $class);
@@ -60,8 +59,8 @@ sub print {
 }
 
 sub setSprite {
-	my ($self, $sprite) = @_;
-	$self->{sprite} = $sprite;
+	my ($self, @sprite) = @_;
+	@{$self->{sprite}} = @sprite;
 }
 
 sub intersects {
@@ -78,8 +77,8 @@ sub intersects {
 }
 
 sub onCollision {
-	my ($self, $other) = @_;
-	$self->setSprite("\e[1;31m".'X'."\e[0m");
+    my ($self, $other) = @_;
+    # Todo
 }
 
 1;

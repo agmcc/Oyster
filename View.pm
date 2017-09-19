@@ -72,7 +72,7 @@ sub drawEntity {
 	my $prev = $self->worldToView($e->{locationPrevious});
 	my $cur = $self->worldToView($e->{location});
 
-	if ($prev ne $cur) {
+	if ($prev ne $cur && $e->{sprite}) {
 		# Clear
 		my $prevRect = Oyster::Bounds->new($prev->{x} + $e->{bounds}->{x1},
 										   $prev->{y} + $e->{bounds}->{y1},
@@ -84,7 +84,10 @@ sub drawEntity {
 										  $cur->{y} + $e->{bounds}->{y1},
 										  $cur->{x} + $e->{bounds}->{x2},
 										  $cur->{y} + $e->{bounds}->{y2});
-		$self->drawRect($curRect, $e->{sprite}, 1);
+
+		$self->drawSprite(Oyster::Vector->new($cur->{x} + $e->{bounds}->{x1},
+											  $cur->{y} + $e->{bounds}->{y1}), 
+						  @{$e->{sprite}});
 	}
 }
 
@@ -99,6 +102,21 @@ sub drawRect {
 			}
 		}
 	}
+}
+
+sub drawSprite {
+	my ($self, $coord, @sprite) = @_;
+
+	for (my $i = 0; $i < scalar @sprite; $i++) {
+		my $pos = Oyster::Vector->sAdd($coord, Oyster::Vector->new(0, $i));
+		$self->moveCursor($pos);
+		print $sprite[$i][0];
+	}
+}
+
+sub moveCursor {
+	my ($self, $coord) = @_;
+	print "\e[".$coord->{y}.";".$coord->{x}."f";
 }
 
 sub worldToView {
@@ -126,7 +144,8 @@ sub showCursor {
 
 sub drawPixel {
     my ($self, $coord, $pixel) = @_;
-    print "\e[".$coord->{y}.";".$coord->{x}."f";
+    # print "\e[".$coord->{y}.";".$coord->{x}."f";
+    $self->moveCursor($coord);
     print $pixel;
 }
 
