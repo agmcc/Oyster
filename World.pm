@@ -52,16 +52,16 @@ sub collisionDetection {
 
 sub checkBounds {
 	my ($self, $e) = @_;
-	# Configurable e.g. No border, wrap around, invert, callback?
-
-	# Wrap around implementation
+	
 	if ($self->{bounds} == WRAP) {
-		if ($e->{location}->{x} > $self->{width}) {
-			$e->{location}->{x} = 0;
+		if ($e->{velocity}->{x} > 0 &&
+			$e->{location}->{x} > $self->{width} - $e->{bounds}->{x2}) {
+			$e->{location}->{x} = -$e->{bounds}->{x1};
 		}
 
-		if ($e->{location}->{x} < 0) {
-			$e->{location}->{x} = $self->{width};
+		if ($e->{velocity}->{x} < 0 &&
+			$e->{location}->{x} < -$e->{bounds}->{x1}) {
+			$e->{location}->{x} = $self->{width} - $e->{bounds}->{x2};
 		}
 
 		if ($e->{location}->{y} > $self->{height}) {
@@ -85,6 +85,11 @@ sub play {
 sub addEntity {
 	my ($self, $e) = @_;
 	push (@{$self->{entities}}, $e);
+}
+
+sub removeEntity {
+	my ($self, $e) = @_;
+	@{$self->{entities}} = grep {$_->{name} ne $e->{name}} @{$self->{entities}};
 }
 
 1;

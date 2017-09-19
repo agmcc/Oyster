@@ -76,9 +76,16 @@ sub intersects {
 			 $l2->{y} + $b2->{y2} <= $l1->{y} + $b1->{y1});
 }
 
+sub setCollisionListener {
+	my ($self, $callback) = @_;
+	$self->{collision} = $callback;	
+}
+
 sub onCollision {
     my ($self, $other) = @_;
-    # Todo
+    if ($self->{collision}) {
+    	$self->{collision}->($other);
+    }
 }
 
 1;
