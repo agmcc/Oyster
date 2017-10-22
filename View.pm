@@ -10,6 +10,9 @@ use Time::HiRes;
 use utf8;
 binmode STDOUT, ":utf8";
 
+use TreeSet;
+use Data::Dumper;
+
 # Constructor
 
 sub new {
@@ -23,42 +26,57 @@ sub new {
 
 sub drawWorld {
 	my ($self, $world) = @_;
-
-	for my $e (@{$world->{entities}}) {
-		$self->drawEntity($e);
+	if (!$self->{blank}) {
+		$self->{blank} = $self->newFrame($world);
 	}
+	# Create new frame from blank template
+	@{$self->{frame}} = @{$self->{blank}};
+	for my $entity (@{$world->{entities}->{contents}}) {
+		my $drawCoord = $self->worldToView($entity->getLocation());
+		$self->drawSprite($drawCoord, $entity->getSprite());
+	}
+	$self->printFrame();
 }
 
-sub drawBorder {
+sub newFrame {
 	my ($self, $world) = @_;
-
+	my @frame;
+	my $bw = $self->getBorderW();
+	# No border
+	if ($bw < 1) {
+		for (my $y = 0; $y < $world->{height}; $y++) {
+			$frame[$y] = ' ' x $world->{width};
+		}
+		return \@frame;
+	}
+	my $rows = $world->{height} + $bw * 2;
+	my $cols = $world->{width} + $bw * 2;
 	my $b = $self->{border};
 
-	return if (!$b);
-
-	for (my $i = 0; $i < $b->{width}; $i++) {
-		# Top left corner
-		$self->drawPixel(Oyster::Vector->new(1 + $i, 1 + $i), $b->{topLeft});
-		# Bottom left corner
-		$self->drawPixel(Oyster::Vector->new(1 + $i, $world->{height} + 1 - $i + $b->{width} * 2), $b->{bottomLeft});
-		# Top right corner
-		$self->drawPixel(Oyster::Vector->new($world->{width} + 1 - $i + $b->{width} * 2, 1 + $i), $b->{topRight});
-		# Bottom right corner
-		$self->drawPixel(Oyster::Vector->new($world->{width} + 1 - $i + $b->{width} * 2, $world->{height} + 1 - $i + $b->{width} * 2), $b->{bottomRight});
-
-		for (my $x = 2 + $i; $x < $world->{width} + 1 - $i + $b->{width} * 2; $x++) {
-			# Top Wall
-			$self->drawPixel(Oyster::Vector->new($x, 1 + $i), $b->{top});
-			# Bottom Wall
-			$self->drawPixel(Oyster::Vector->new($x, $world->{height} + 1 - $i + $b->{width} * 2), $b->{bottom});
+	for (my $y = 0; $y < $rows; $y++) {
+		if ($y < $bw) {
+			# Top rows
+			$frame[$y] = $b->{left} x $y.$b->{topLeft}
+							.$b->{top} x ($world->{width} + 2 * ($bw - $y - 1))
+							.$b->{topRight}.$b->{right} x $y;
+		} elsif ($y > $rows - $bw - 1) {
+			# Bottom rows
+			$frame[$y] = $b->{left} x ($rows - $y - 1).$b->{bottomLeft}
+							.$b->{bottom} x ($world->{width} + 2 * ($bw - ($rows - $y - 1) - 1))
+							.$b->{bottomRight}.$b->{right} x ($rows - $y - 1);
+		} else {
+			# Middle rows
+			$frame[$y] = $self->{border}->{left} x $bw.' ' x $world->{width}.$self->{border}->{right} x $bw;
 		}
+	}
+	return \@frame;
+}
 
-		for (my $y = 2 + $i; $y < $world->{height} + 1 - $i + $b->{width} * 2; $y++) {
-			# Left Wall
-			$self->drawPixel(Oyster::Vector->new(1 + $i, $y), $b->{left});
-			# Right Wall
-			$self->drawPixel(Oyster::Vector->new($world->{width} + 1 - $i + $b->{width} * 2, $y), $b->{right});
-		}
+sub printFrame {
+	my ($self) = @_;
+	moveCursor(Oyster::Vector->new(0, 0));
+	for my $line (@{$self->{frame}}) {
+		print $line."\n";
 	}
 }
 
@@ -67,63 +85,46 @@ sub setBorder {
 	$self->{border} = $border;
 }
 
-sub drawEntity {
-	my ($self, $e) = @_;
-	my $prev = $self->worldToView($e->{locationPrevious});
-	my $cur = $self->worldToView($e->{location});
-
-	if ($prev ne $cur && $e->{sprite}) {
-		# Clear
-		my $prevRect = Oyster::Bounds->new($prev->{x} + $e->{bounds}->{x1},
-										   $prev->{y} + $e->{bounds}->{y1},
-										   $prev->{x} + $e->{bounds}->{x2},
-										   $prev->{y} + $e->{bounds}->{y2});
-		$self->drawRect($prevRect, ' ', 1);
-		# Draw
-		my $curRect = Oyster::Bounds->new($cur->{x} + $e->{bounds}->{x1},
-										  $cur->{y} + $e->{bounds}->{y1},
-										  $cur->{x} + $e->{bounds}->{x2},
-										  $cur->{y} + $e->{bounds}->{y2});
-
-		$self->drawSprite(Oyster::Vector->new($cur->{x} + $e->{bounds}->{x1},
-											  $cur->{y} + $e->{bounds}->{y1}), 
-						  @{$e->{sprite}});
-	}
+sub getBorderW {
+	my ($self) = @_;
+	return $self->{border}->{width} ? $self->{border}->{width} : 0;
 }
 
-sub drawRect {
-	my ($self, $rect, $pixel, $fill) = @_;
-	for (my $x = $rect->{x1}; $x <= $rect->{x2}; $x++) {
-		for (my $y = $rect->{y1}; $y <= $rect->{y2}; $y++) {
-			if ($fill || (!$fill &&
-				$x == $rect->{x1} || $x == $rect->{x2} || 
-				$y == $rect->{y1} || $y == $rect->{y2})) {
-				$self->drawPixel(Oyster::Vector->new($x, $y), $pixel);
+sub drawSprite {
+	my ($self, $origin, $sprite) = @_;
+	my $bw = $self->getBorderW();
+	# For each row in the sprite
+	for (my $y = 0; $y < scalar $sprite->getData(); $y++) {
+		my $drawY = $origin->{y} + $y;
+		# Only draw sprite rows inside frame
+		if ($drawY < scalar @{$self->{frame}} - $bw) {
+			# Get reference current frame row to modify
+			my $frameRowRef = \${$self->{frame}}[$drawY];
+			# Split current sprite row into array of chars
+			my @spriteRow = split //, ${$sprite->{data}}[$y];
+			for (my $x = 0; $x < scalar @spriteRow; $x++) {
+				# Position to on frame to draw
+				my $drawX = $origin->{x} + $x;
+				# Add non-transparent sprite row chars to frame row and
+				# ensure chars aren't drawn outside frame
+				if ($spriteRow[$x] ne ' ' && $drawX < (length $$frameRowRef) - $bw) {
+					substr($$frameRowRef, $drawX, 1) = $spriteRow[$x];
+				}
 			}
 		}
 	}
 }
 
-sub drawSprite {
-	my ($self, $coord, @sprite) = @_;
-
-	for (my $i = 0; $i < scalar @sprite; $i++) {
-		my $pos = Oyster::Vector->sAdd($coord, Oyster::Vector->new(0, $i));
-		$self->moveCursor($pos);
-		print $sprite[$i][0];
-	}
-}
-
 sub moveCursor {
-	my ($self, $coord) = @_;
+	my ($coord) = @_;
 	print "\e[".$coord->{y}.";".$coord->{x}."f";
 }
 
 sub worldToView {
-	my ($self, $v) = @_;
-	my $borderOffset = $self->{border} ? $self->{border}->{width} : 0;
-	my $x = sprintf("%.0f", $v->{x}) + 1 + $borderOffset;
-	my $y = sprintf("%.0f", $v->{y}) + 1 + $borderOffset; 
+	my ($self, $entity) = @_;
+	my $bw = $self->getBorderW();
+	my $x = sprintf("%.0f", $entity->{x}) + $bw;
+	my $y = sprintf("%.0f", $entity->{y}) + $bw; 
 	return Oyster::Vector->new($x, $y);
 }
 
@@ -140,13 +141,6 @@ sub hideCursor {
 
 sub showCursor {
 	print "\e[?25h";
-}
-
-sub drawPixel {
-    my ($self, $coord, $pixel) = @_;
-    # print "\e[".$coord->{y}.";".$coord->{x}."f";
-    $self->moveCursor($coord);
-    print $pixel;
 }
 
 1;

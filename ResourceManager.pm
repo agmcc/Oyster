@@ -36,11 +36,14 @@ sub loadAll {
 
 sub loadSprite {
 	my ($file, $name) = @_;
-	print "Loading: $file\n";
 	open (my $fh, '<', $file) or die "Failed to open $file: $!\n";
-	chomp(my @lines = <$fh>);
-	my $sprite = Oyster::Sprite->new($name, \@lines);
+	my @lines = <$fh>;
+	for (my $i = 0; $i < scalar @lines; $i++) {
+		# Strip newlines
+		$lines[$i] =~ s/\R//g;
+	}
 	close $fh or warn "Failed to close $file: $!\n";
+	my $sprite = Oyster::Sprite->new($name, @lines);
 	return $sprite;
 }
 

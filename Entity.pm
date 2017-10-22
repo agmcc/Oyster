@@ -21,7 +21,8 @@ sub new {
 		location => Oyster::Vector->sZero(),
 		velocity => Oyster::Vector->sZero(),
 		locationPrevious => Oyster::Vector->sZero(),
-		bounds => Oyster::Bounds->new(0, 0, 1, 1)
+		bounds => Oyster::Bounds->new(0, 0, 1, 1),
+		layer => 0
 	};
 	bless ($self, $class);
 	return $self;
@@ -47,6 +48,7 @@ sub ne {
 
 sub print {
 	my ($self) = @_;
+	print "name: ";
 	print ("$self->{name}\n");
 	print "location: ";
 	$self->{location}->print();
@@ -56,11 +58,18 @@ sub print {
 	$self->{velocity}->print();
 	print "bounds: ";
 	$self->{bounds}->print();
+	print "layer: ";
+	print $self->{layer}."\n";
+}
+
+sub getSprite {
+	my ($self) = @_;
+	return $self->{sprite};
 }
 
 sub setSprite {
-	my ($self, @sprite) = @_;
-	@{$self->{sprite}} = @sprite;
+	my ($self, $sprite) = @_;
+	$self->{sprite} = $sprite;
 }
 
 sub intersects {
@@ -86,6 +95,21 @@ sub onCollision {
     if ($self->{collision}) {
     	$self->{collision}->($other);
     }
+}
+
+sub getLayer {
+	my ($self) = @_;
+	return $self->{layer};
+}
+
+sub setLayer {
+	my ($self, $layer) = @_;
+	$self->{layer} = $layer;
+}
+
+sub getLocation {
+	my ($self) = @_;
+	return $self->{location};
 }
 
 1;

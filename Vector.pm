@@ -152,7 +152,7 @@ sub sNormalize {
 
 sub sZero {
 	my ($class) = @_;
-	return $class->new(0, 0);
+	return Oyster::Vector->new(0, 0);
 }
 
 1;

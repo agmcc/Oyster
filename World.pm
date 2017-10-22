@@ -8,6 +8,7 @@ use warnings;
 use Time::HiRes;
 
 use Data::Dumper;
+use TreeSet;
 
 use constant {
 	WRAP => 0
@@ -20,7 +21,7 @@ sub new {
 	my $self = {
 		width => $w,
 		height => $h,
-		entities => [],
+		entities => Oyster::TreeSet->new(\&sortEntities),
 		tickRate => 1,
 		bounds => $bounds
 	};
@@ -28,13 +29,18 @@ sub new {
 	return $self;
 }
 
+sub sortEntities {
+	my ($a, $b) = @_;
+	return $b->getLayer() - $a->getLayer();
+}
+
 sub tick {
 	my ($self) = @_;
 	# print "Tick\n";
-	for my $e (@{$self->{entities}}) {
+	for my $e (@{$self->{entities}->{contents}}) {
 		$e->update();
 		$self->checkBounds($e);
-		$self->collisionDetection($e, @{$self->{entities}});
+		$self->collisionDetection($e, @{$self->{entities}->{contents}});
 	}
 }
 
@@ -84,7 +90,8 @@ sub play {
 
 sub addEntity {
 	my ($self, $e) = @_;
-	push (@{$self->{entities}}, $e);
+	$self->{entities}->add($e);
+	# push (@{$self->{entities}}, $e);
 }
 
 sub removeEntity {

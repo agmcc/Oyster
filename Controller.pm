@@ -8,6 +8,7 @@ use warnings;
 use Time::HiRes qw'sleep';
 use Data::Dumper;
 use Input;
+use View;
 
 # Constructor
 
@@ -27,8 +28,12 @@ sub new {
 
 sub run {
 	my ($self) = @_;
+
+	Oyster::View::hideCursor;
+	Oyster::View::clearScreen();
+	
 	while (1) {
-		$self->{input}->listen();	
+		$self->{input}->listen() if ($self->{input});	
 		$self->{onUpdate}->() if ($self->{onUpdate});
 		$self->{world}->tick();
 		$self->{view}->drawWorld($self->{world});
