@@ -10,10 +10,11 @@ use Vector;
 # Constructor
 
 sub new {
-	my ($class, $name, @data) = @_;
+	my ($class, $name, $data, $frameNo) = @_;
 	my $self = {
 		name => $name,
-		data => \@data
+		data => $data,
+		frameNo => $frameNo
 	};
 	bless ($self, $class);
 	$self->calculateMax();
@@ -37,8 +38,7 @@ sub calculateMax {
 			$maxW = $l;
 		}
 	}
-	$self->{maxW} = Oyster::Vector->new($maxW, scalar @{$self->{data}});
-	$self->{maxH} = scalar @{$self->{data}};
+	$self->{dimens} = Oyster::Vector->new($maxW, scalar @{$self->{data}});
 }
 
 1;

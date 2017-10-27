@@ -34,6 +34,7 @@ sub update {
 	my ($self) = @_;
 	$self->{locationPrevious} = Oyster::Vector->sClone($self->{location});
 	$self->{location}->add($self->{velocity});
+	$self->{animation}->play() if ($self->{animation});
 }
 
 sub eq {
@@ -64,7 +65,11 @@ sub print {
 
 sub getSprite {
 	my ($self) = @_;
-	return $self->{sprite};
+	if ($self->{animation}) {
+		return $self->{animation}->getCurrentFrame();
+	} else {
+		return $self->{sprite};
+	}
 }
 
 sub setSprite {
@@ -110,6 +115,16 @@ sub setLayer {
 sub getLocation {
 	my ($self) = @_;
 	return $self->{location};
+}
+
+sub getAnimation {
+	my ($self) = @_;
+	return $self->{animation};
+}
+
+sub setAnimation {
+	my ($self, $anim) = @_;
+	$self->{animation} = $anim;
 }
 
 1;
