@@ -19,8 +19,6 @@ sub new {
 	my $self = {
 		name => $name,
 		location => Oyster::Vector->sZero(),
-		velocity => Oyster::Vector->sZero(),
-		locationPrevious => Oyster::Vector->sZero(),
 		bounds => Oyster::Bounds->new(0, 0, 1, 1),
 		layer => 0
 	};
@@ -32,8 +30,11 @@ sub new {
 
 sub update {
 	my ($self) = @_;
-	$self->{locationPrevious} = Oyster::Vector->sClone($self->{location});
-	$self->{location}->add($self->{velocity});
+	# Location
+	if ($self->{physics}) {
+		$self->{location} = $self->{physics}->updateLocation($self->{location});
+	}
+	# Animation
 	if ($self->{animator}) {
 		$self->{animator}->play($self->{velocity});
 		$self->{animator}->getCurrentState()->getAnimation()->play();
@@ -57,10 +58,6 @@ sub print {
 	print ("$self->{name}\n");
 	print "location: ";
 	$self->{location}->print();
-	print "locationPrevious: ";
-	$self->{locationPrevious}->print();
-	print "velocity: ";
-	$self->{velocity}->print();
 	print "bounds: ";
 	$self->{bounds}->print();
 	print "layer: ";
@@ -139,6 +136,16 @@ sub setAnimation {
 sub setAnimator {
 	my ($self, $animator) = @_;
 	$self->{animator} = $animator;
+}
+
+sub setPhysics {
+	my ($self, $physics) = @_;
+	$self->{physics} = $physics;
+}
+
+sub getPhysics {
+	my ($self) = @_;
+	return $self->{physics};
 }
 
 1;

@@ -9,9 +9,11 @@ use Time::HiRes;
 
 use Data::Dumper;
 use TreeSet;
+use Physics;
 
 use constant {
-	WRAP => 0
+	WRAP => 0,
+	FLOOR => 1
 };
 
 # Constructor
@@ -58,6 +60,15 @@ sub collisionDetection {
 
 sub checkBounds {
 	my ($self, $e) = @_;
+
+	# Temporary
+	if ($self->{bounds} == FLOOR) {
+		if ($e->{location}->{y} > $self->{height} - $e->{bounds}->{y2} * 2 - 2) {
+			$e->getPhysics()->setVelocity(Oyster::Vector::sZero());
+			$e->getPhysics()->setGravity(Oyster::Physics::GRAVITY_OFF);
+		}
+		return;
+	}
 	
 	if ($self->{bounds} == WRAP) {
 		if ($e->{velocity}->{x} > 0 &&
