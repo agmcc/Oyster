@@ -1,0 +1,29 @@
+Finite state machine
+initial state
+list of states
+conditions for each state
+
+stand
+    initial
+    velocity 0
+walk
+    velocity between 0 and 5
+run
+    velocity > 5
+
+Create AnimationController
+add animation states (Animation and condition)
+set initial state
+call play sub with params
+
+e.g.
+
+# Basic initialisation
+AnimationController ac = Oyster::AnimationController::new();
+ac->addState(standing, sub {a == 0})
+ac->addState(walking, sub { a > 0 && a < 5})
+ac->addState(running, sub {a > 5})
+ac->play(velocity)
+
+# Then do
+ac->getCurrentAnimation()
