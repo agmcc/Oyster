@@ -32,8 +32,15 @@ sub drawWorld {
 	# Create new frame from blank template
 	@{$self->{frame}} = @{$self->{blank}};
 	for my $entity (@{$world->{entities}->{contents}}) {
-		my $drawCoord = $self->worldToView($entity->getLocation());
-		$self->drawSprite($drawCoord, $entity->getSprite());
+		if ($self->{debug}) {
+			# Draw collider for entity
+			if ($entity->getCollider()) {
+				$self->drawBoxCollider($entity);
+			}
+		} else {
+			my $drawCoord = $self->worldToView($entity->getLocation());
+			$self->drawSprite($drawCoord, $entity->getSprite());
+		}
 	}
 	$self->printFrame();
 }
@@ -121,10 +128,10 @@ sub moveCursor {
 }
 
 sub worldToView {
-	my ($self, $entity) = @_;
+	my ($self, $pos) = @_;
 	my $bw = $self->getBorderW();
-	my $x = sprintf("%.0f", $entity->{x}) + $bw;
-	my $y = sprintf("%.0f", $entity->{y}) + $bw; 
+	my $x = sprintf("%.0f", $pos->{x}) + $bw;
+	my $y = sprintf("%.0f", $pos->{y}) + $bw; 
 	return Oyster::Vector->new($x, $y);
 }
 
@@ -141,6 +148,46 @@ sub hideCursor {
 
 sub showCursor {
 	print "\e[?25h";
+}
+
+sub setDebug {
+	my ($self, $flag) = @_;
+	$self->{debug} = $flag;
+}
+
+sub drawRect {
+	my ($self, $x1, $y1, $x2, $y2, $pixel, $fill) = @_;
+	for (my $x = $x1; $x <= $x2; $x++) {
+		for (my $y = $y1; $y <= $y2; $y++) {
+			if ($fill || (!$fill &&
+				$x == $x1 || $x == $x2 || 
+				$y == $y1 || $y == $y2)) {
+				$self->drawPixel(Oyster::Vector->new($x, $y), $pixel);
+			}
+		}
+	}
+}
+
+sub drawPixel {
+	my ($self, $coord, $pixel) = @_;
+	my $bw = $self->getBorderW();
+	if ($coord->{y} < scalar @{$self->{frame}} - $bw) {
+		my $frameRowRef = \${$self->{frame}}[$coord->{y}];
+		if ($coord->{x} < (length $$frameRowRef) - $bw) {
+			substr($$frameRowRef, $coord->{x}, 1) = $pixel;
+		}
+	}
+}
+
+sub drawBoxCollider {
+	my ($self, $entity) = @_;
+	my $off = $self->worldToView($entity->getLocation());
+	$self->drawRect($off->{x} + $entity->getCollider()->{x1},
+				    $off->{y} + $entity->getCollider()->{y1},
+				    $off->{x} + $entity->getCollider()->{x2},
+				    $off->{y} + $entity->getCollider()->{y2},
+				    'x',
+				    0);
 }
 
 1;

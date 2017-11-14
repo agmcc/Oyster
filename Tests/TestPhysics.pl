@@ -15,15 +15,16 @@ use Controller;
 use Vector;
 use Border;
 use Physics;
+use BoxCollider;
 
 $|=1;
 
 
 sub main{
-	my $rm = Oyster::ResourceManager->new('/mnt/c/Users/Alexander/Documents/PerlProjects/Modules/Oyster/resources');
+	my $rm = Oyster::ResourceManager->new('./resources');
 	$rm->loadAll();
 
-	my $world = Oyster::World->new(150, 70, Oyster::World::FLOOR);
+	my $world = Oyster::World->new(120, 35);
 
 	# Create entity with basic animation
 	my $spinner = Oyster::Entity->new('spinner');
@@ -40,13 +41,35 @@ sub main{
 	
 	$spinner->setPhysics($spinnerPhysics);
 
-	$world->addEntity($spinner);
+	# Floor
+	my $floor = Oyster::Entity->new('floor');
+	$floor->setLocation(Oyster::Vector->new($world->getWidth() - 41, $world->getHeight() - 3));
+	$floor->setSprite($rm->getSprite('wall'));
+	$floor->setCollider(Oyster::BoxCollider->new(0, 0, 40, 2));
+
+	# Box
+	my $box = Oyster::Entity->new('box');
+	$box->setLocation(Oyster::Vector->new($world->getWidth() - 30, 5));
+	$box->setSprite($rm->getSprite('box'));
+	$box->setCollider(Oyster::BoxCollider->new(0, 0, 6, 3));
+	my $boxPhysics = Oyster::Physics->new();
+	$boxPhysics->setGravity(Oyster::Physics::GRAVITY_ON);
+	$box->setPhysics($boxPhysics);
+	$box->setCollisionListener(sub {
+		my ($self, $other) = @_;
+		$box->getPhysics()->applyForce(Oyster::Vector->new(0, -0.7));
+	});
+
+	# $world->addEntity($spinner);
+	$world->addEntity($floor);
+	$world->addEntity($box);
 
 	my $border = Oyster::Border->new();
 	$border->setWidth(1);
 
 	my $view = Oyster::View->new();
 	$view->setBorder($border);
+	$view->setDebug(1);
 
 	my $controller = Oyster::Controller->new($world, $view);
 	$controller->run();
