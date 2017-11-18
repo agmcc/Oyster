@@ -31,11 +31,12 @@ sub drawWorld {
 	}
 	# Create new frame from blank template
 	@{$self->{frame}} = @{$self->{blank}};
+
 	for my $entity (@{$world->{entities}->{contents}}) {
 		if ($self->{debug}) {
 			# Draw collider for entity
 			if ($entity->getCollider()) {
-				$self->drawBoxCollider($entity);
+				$self->drawBoxCollider($entity, 'X');
 			}
 		} else {
 			my $drawCoord = $self->worldToView($entity->getLocation());
@@ -162,32 +163,106 @@ sub drawRect {
 			if ($fill || (!$fill &&
 				$x == $x1 || $x == $x2 || 
 				$y == $y1 || $y == $y2)) {
-				$self->drawPixel(Oyster::Vector->new($x, $y), $pixel);
+				$self->drawPixel($x, $y, $pixel);
 			}
 		}
 	}
 }
 
 sub drawPixel {
-	my ($self, $coord, $pixel) = @_;
+	my ($self, $x, $y, $pixel) = @_;
 	my $bw = $self->getBorderW();
-	if ($coord->{y} < scalar @{$self->{frame}} - $bw) {
-		my $frameRowRef = \${$self->{frame}}[$coord->{y}];
-		if ($coord->{x} < (length $$frameRowRef) - $bw) {
-			substr($$frameRowRef, $coord->{x}, 1) = $pixel;
+	if ($y < scalar @{$self->{frame}} - $bw) {
+		my $frameRowRef = \${$self->{frame}}[$y];
+		if ($x < (length $$frameRowRef) - $bw) {
+			substr($$frameRowRef, $x, 1) = $pixel;
 		}
 	}
 }
 
 sub drawBoxCollider {
-	my ($self, $entity) = @_;
+	my ($self, $entity, $pixel) = @_;
 	my $off = $self->worldToView($entity->getLocation());
 	$self->drawRect($off->{x} + $entity->getCollider()->{x1},
 				    $off->{y} + $entity->getCollider()->{y1},
 				    $off->{x} + $entity->getCollider()->{x2},
 				    $off->{y} + $entity->getCollider()->{y2},
-				    'x',
-				    0);
+				    $pixel);
+}
+
+sub drawLine {
+	my ($self, $x0, $y0, $x1, $y1, $pixel) = @_;
+	# Bresenham's line algorithm
+    my $steep = abs($y1 - $y0) > abs($x1 - $x0);
+    if ($steep) {
+		($y0, $x0) = ($x0, $y0);
+		($y1, $x1) = ($x1, $y1);
+    }
+    if ($x0 > $x1) {
+		($x1, $x0) = ($x0, $x1);
+		($y1, $y0) = ($y0, $y1);
+    }
+    my $deltax = $x1 - $x0;
+    my $deltay = abs($y1 - $y0);
+    my $error = $deltax / 2;
+    my $ystep;
+    my $y = $y0;
+    my $x;
+    $ystep = $y0 < $y1 ? 1 : -1;
+	for( $x = $x0; $x <= $x1; $x += 1 ) {
+		if ( $steep ) {
+			$self->drawPixel($y, $x, $pixel);
+		} else {
+			$self->drawPixel($x, $y, $pixel);
+		}
+		$error -= $deltay;
+		if ( $error < 0 ) {
+			$y += $ystep;
+			$error += $deltax;
+		}
+	}
+}
+
+sub drawPolygonVerts {
+	my ($self, $vertices, $pixel) = @_;
+	my $n = 0;
+	for my $v (@{$vertices}) {
+		$self->drawPixel($v->{x}, $v->{y}, $n);
+		$n++;
+	}
+}
+
+sub drawPolygonEdges {
+	my ($self, $vertices, $pixel) = @_;
+	my @vertices = @{$vertices};
+
+	# Connect points
+	my $lastVertInd = (scalar @vertices) - 1;
+	for (my $i = 0; $i < $lastVertInd; $i++) {
+		$self->drawLine($vertices[$i]->{x},
+						$vertices[$i]->{y},
+		                $vertices[$i + 1]->{x},
+						$vertices[$i + 1]->{y},
+						$pixel);
+	}
+
+	# Close shape
+	$self->drawLine($vertices[0]->{x},
+					$vertices[0]->{y},
+	                $vertices[$lastVertInd]->{x},
+					$vertices[$lastVertInd]->{y},
+					$pixel);
+}
+
+sub drawRect {
+	my ($self, $x1, $y1, $x2, $y2, $pixel) = @_;
+	my @verts = (
+		Oyster::Vector->new($x1, $y1),
+		Oyster::Vector->new($x2, $y1),
+		Oyster::Vector->new($x2, $y2),
+		Oyster::Vector->new($x1, $y2)
+	);
+	$self->drawPolygonEdges(\@verts, $pixel);
 }
 
 1;
